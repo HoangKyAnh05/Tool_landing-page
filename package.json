@@ -1,0 +1,11 @@
+{
+  "name": "komorebi-sanctuary-landing-page",
+  "version": "1.0.0",
+  "description": "Komorebi Sanctuary landing page with Three.js and GSAP animations.",
+  "main": "server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {}
+}
