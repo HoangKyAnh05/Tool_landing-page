@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: komorebi-sanctuary-landing-page
+    env: node
+    buildCommand: yarn
+    startCommand: node server.mjs
