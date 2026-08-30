@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="night">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KOMOREBI SANCTUARY • Khu Nghỉ Dưỡng Mộc Lan & Sương Mây</title>
+  <meta name="description" content="Komorebi Sanctuary - Khu homestay sinh thái nghỉ dưỡng ẩn mình giữa rừng thông và mây ngàn Hoàng Liên Sơn. Trải nghiệm tắm khoáng onsen, ngắm mây và tĩnh lặng tâm hồn." />
+
+  <!-- Google Fonts with full Vietnamese diacritics support -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Three.js, GSAP & Lenis via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Countdown Preloader -->
+  <div class="site-preloader" id="preloader">
+    <div class="preloader-curtain curtain-left"></div>
+    <div class="preloader-curtain curtain-right"></div>
+    <div class="preloader-content">
+      <span class="preloader-kanji">木漏れ日</span>
+      <div class="preloader-counter" id="preloader-counter">00%</div>
+      <span class="preloader-status" id="preloader-status">KHỞI ĐỘNG KHÔNG GIAN 3D & SƯƠNG MÙ...</span>
+      <div class="preloader-bar"><div class="preloader-bar-fill" id="preloader-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Custom Magnetic Cursor -->
+  <div class="custom-cursor" id="custom-cursor">
+    <span class="cursor-text" id="cursor-text"></span>
+  </div>
+  <div class="cursor-dot" id="cursor-dot"></div>
+
+  <!-- Global Scroll Progress Indicator -->
+  <div class="scroll-progress-bar" id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Floating Image Trail Container -->
+  <div class="image-trail-container" id="image-trail-container" aria-hidden="true"></div>
+
+  <!-- 3D WebGL Background Canvas -->
+  <div id="canvas-container" class="canvas-container">
+    <canvas id="webgl-canvas"></canvas>
+    <div class="mist-overlay"></div>
+    <div class="vignette-overlay"></div>
+  </div>
+
+  <!-- Noise Texture Filter for Film Grain -->
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="site-header" id="site-header">
+    <div class="nav-container">
+      <a href="#" class="brand-logo">
+        <span class="logo-kanji">木漏れ日</span>
+        <div class="logo-text">
+          <span class="brand-name">KOMOREBI</span>
+          <span class="brand-tagline">MIST SANCTUARY • SAPA</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="#about" class="nav-link">Triết Lý</a>
+        <a href="#villas" class="nav-link">Các Căn Villa</a>
+        <a href="#experiences" class="nav-link">Trải Nghiệm</a>
+        <a href="#sensory" class="nav-link">Thính Âm Tự Nhiên</a>
+        <a href="#reviews" class="nav-link">Đánh Giá</a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Mood / Time of Day Switcher -->
+        <div class="mood-selector" title="Thay đổi bầu không khí">
+          <button class="mood-btn active" data-mood="night" id="mood-night" aria-label="Đêm trăng sao">
+            <i data-lucide="moon"></i>
+          </button>
+          <button class="mood-btn" data-mood="sunset" id="mood-sunset" aria-label="Hoàng hôn mây vàng">
+            <i data-lucide="sunset"></i>
+          </button>
+          <button class="mood-btn" data-mood="dawn" id="mood-dawn" aria-label="Bình minh sương sớm">
+            <i data-lucide="sun"></i>
+          </button>
+        </div>
+
+        <!-- Ambient Sound Toggle -->
+        <button class="sound-toggle-btn" id="sound-toggle" title="Bật/Tắt âm thanh rừng thông & suối reo">
+          <span class="sound-icon-wrap">
+            <i data-lucide="volume-2" class="sound-icon-on"></i>
+            <i data-lucide="volume-x" class="sound-icon-off"></i>
+          </span>
+          <span class="sound-label">Suối Rừng</span>
+          <div class="sound-wave-visualizer" id="sound-bars">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </button>
+
+        <button class="liquid-btn nav-cta-btn" id="header-book-btn">
+          <span class="btn-text">Đặt Phòng</span>
+          <span class="liquid-glow"></span>
+        </button>
+
+        <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Mở menu">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-main">
+    
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">22°20'N 103°50'E • ĐỘ CAO 1,650M TRÊN MỰC NƯỚC BIỂN</span>
+          <span class="live-weather" id="live-weather">
+            <i data-lucide="cloud-rain" class="weather-icon"></i>
+            <span>17°C • Sương Phủ Rừng Thông</span>
+          </span>
+        </div>
+
+        <h1 class="hero-title">
+          <span class="title-sub">Nơi Chạm Vào Mây Ngàn</span>
+          <span class="title-main">TỊNH TẠI GIỮA RỪNG THÔNG</span>
+        </h1>
+
+        <p class="hero-description">
+          Lấy cảm hứng từ triết lý <em>Komorebi</em> — những vệt nắng lung linh lọc qua kẽ lá râm ran. Khu nghỉ dưỡng homestay sinh thái với vật liệu gỗ tuyết tùng, đá bazan tự nhiên và suối khoáng nóng ôm trọn thung lũng Mường Hoa.
+        </p>
+
+        <div class="hero-actions">
+          <button class="liquid-btn primary-hero-btn" id="hero-explore-btn">
+            <span class="btn-text">Khám Phá Các Căn Villa</span>
+            <i data-lucide="arrow-down" class="btn-icon"></i>
+            <span class="liquid-glow"></span>
+          </button>
+          
+          <button class="ghost-btn virtual-tour-btn" id="virtual-tour-btn">
+            <i data-lucide="compass" class="btn-icon"></i>
+            <span>Trải Nghiệm 3D View</span>
+          </button>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">04</span>
+            <span class="stat-lbl">Biệt Thự Biệt Lập</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">100%</span>
+            <span class="stat-lbl">View Mây & Rừng Thông</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">4.98 ★</span>
+            <span class="stat-lbl">Đánh Giá Từ 480+ Du Khách</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Quick Booking Bar (ThreeUI Card Style) -->
+      <div class="booking-dock" id="booking-dock">
+        <div class="booking-dock-inner">
+          <div class="dock-col">
+            <label for="dock-checkin"><i data-lucide="calendar"></i> Ngày Đến</label>
+            <input type="date" id="dock-checkin" value="2026-09-15" />
+          </div>
+          <div class="dock-divider"></div>
+          <div class="dock-col">
+            <label for="dock-checkout"><i data-lucide="calendar-check"></i> Ngày Đi</label>
+            <input type="date" id="dock-checkout" value="2026-09-17" />
+          </div>
+          <div class="dock-divider"></div>
+          <div class="dock-col">
+            <label for="dock-villa"><i data-lucide="home"></i> Hạng Phòng</label>
+            <select id="dock-villa">
+              <option value="glass-pine">The Glass Pine Pavilion</option>
+              <option value="cloud-crest">Cloud Crest Loft</option>
+              <option value="mizu-stream">Mizu Stream Retreat</option>
+              <option value="aether-dome">Aether Star Observatory</option>
+            </select>
+          </div>
+          <div class="dock-divider"></div>
+          <div class="dock-col">
+            <label for="dock-guests"><i data-lucide="users"></i> Số Khách</label>
+            <select id="dock-guests">
+              <option value="2">2 Người Lớn (Cặp đôi)</option>
+              <option value="4">4 Người (Gia đình)</option>
+              <option value="1">1 Người (Solo Retreat)</option>
+              <option value="6">6 Người (Nhóm bạn)</option>
+            </select>
+          </div>
+          <div class="dock-action">
+            <button class="liquid-btn dock-btn" id="dock-submit-btn">
+              <span class="btn-text">Kiểm Tra Trống</span>
+              <i data-lucide="sparkles"></i>
+              <span class="liquid-glow"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Infinite Kinetic Marquee Banner -->
+    <div class="marquee-strip" aria-hidden="true">
+      <div class="marquee-track" id="marquee-track">
+        <span class="marquee-item">KOMOREBI SANCTUARY</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">MÂY NGÀN HOÀNG LIÊN SƠN</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">ONSEN KHOÁNG NÓNG BẢN ĐỊA</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">TRIẾT LÝ WABI-SABI NGUYÊN BẢN</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">ẨM THỰC FARM-TO-TABLE HỮU CƠ</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">KOMOREBI SANCTUARY</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">MÂY NGÀN HOÀNG LIÊN SƠN</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">ONSEN KHOÁNG NÓNG BẢN ĐỊA</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">TRIẾT LÝ WABI-SABI NGUYÊN BẢN</span><span class="marquee-star">✦</span>
+        <span class="marquee-item">ẨM THỰC FARM-TO-TABLE HỮU CƠ</span><span class="marquee-star">✦</span>
+      </div>
+    </div>
+
+    <!-- Philosophy & Architecture Section -->
+    <section class="section philosophy-section" id="about">
+      <div class="container">
+        <div class="section-badge">
+          <i data-lucide="leaf"></i>
+          <span>TRIẾT LÝ KIẾN TRÚC & NGHỈ DƯỠNG</span>
+        </div>
+        <h2 class="section-title">
+          Khi Thiên Nhiên Là Bức Tranh Tường Đẹp Nhất
+        </h2>
+        <p class="section-subtitle">
+          Chúng tôi không xây khách sạn trên sườn núi; chúng tôi đan cài các gian nhà gỗ thông vào lòng địa hình, tôn trọng từng gốc thông cổ thụ và dòng suối ngầm.
+        </p>
+
+        <div class="philosophy-grid">
+          <div class="philo-card" data-tilt>
+            <div class="card-icon-wrap">
+              <i data-lucide="droplet"></i>
+            </div>
+            <h3>Onsen Khoáng Nóng Tự Nhiên</h3>
+            <p>Mỗi căn villa đều sở hữu bồn ngâm gỗ Pơ-mu ngoài trời dẫn trực tiếp mạch nước khoáng thảo dược từ lòng núi Fansipan.</p>
+            <div class="card-glow"></div>
+          </div>
+
+          <div class="philo-card" data-tilt>
+            <div class="card-icon-wrap">
+              <i data-lucide="eye"></i>
+            </div>
+            <h3>Kiến Trúc Kính Panorama 360°</h3>
+            <p>Hệ thống vách kính Low-E cản nhiệt mở rộng tầm nhìn vô cực xuống thung lũng mây, để bạn thức giấc cùng biển mây tràn qua ô cửa.</p>
+            <div class="card-glow"></div>
+          </div>
+
+          <div class="philo-card" data-tilt>
+            <div class="card-icon-wrap">
+              <i data-lucide="coffee"></i>
+            </div>
+            <h3>Ẩm Thực Farm-to-Table & Trà Đạo</h3>
+            <p>Thực đơn hữu cơ thu hoạch trong ngày từ vườn rau bậc thang bản địa, kết hợp văn hóa thưởng trà Shan Tuyết cổ thụ 300 năm.</p>
+            <div class="card-glow"></div>
+          </div>
+
+          <div class="philo-card" data-tilt>
+            <div class="card-icon-wrap">
+              <i data-lucide="wind"></i>
+            </div>
+            <h3>Thanh Âm Yên Ả Tuyệt Đối</h3>
+            <p>Không khói bụi, không tiếng còi xe. Chỉ có tiếng gió reo qua tán kim thông, tiếng róc rách của thác nước và tiếng chim rừng ríu rít.</p>
+            <div class="card-glow"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Villas & Cabins Showcase Section -->
+    <section class="section villas-section" id="villas">
+      <div class="container">
+        <div class="section-header-row">
+          <div>
+            <div class="section-badge">
+              <i data-lucide="sparkles"></i>
+              <span>KHÔNG GIAN NGHỈ DƯỠNG BIỆT LẬP</span>
+            </div>
+            <h2 class="section-title">Bốn Dinh Thự Ẩn Mình Trong Mây</h2>
+          </div>
+          <div class="villa-filter-tabs" id="villa-tabs">
+            <button class="tab-btn active" data-filter="all">Tất Cả (4)</button>
+            <button class="tab-btn" data-filter="couple">Cặp Đôi</button>
+            <button class="tab-btn" data-filter="family">Gia Đình</button>
+            <button class="tab-btn" data-filter="luxury">Cao Cấp Nhất</button>
+          </div>
+        </div>
+
+        <div class="villas-stack-container" id="villas-stack-container">
+          <!-- Stack Card 1 -->
+          <article class="villa-card stack-card" data-category="couple luxury" data-index="1" style="--card-index: 1;" data-cursor="XEM VILLA">
+            <div class="stack-card-header-bar">
+              <div class="stack-card-identity">
+                <span class="stack-number">01</span>
+                <span class="stack-villa-name">THE GLASS PINE PAVILION</span>
+              </div>
+              <span class="stack-pill-tag">Most Popular • Độc Bản</span>
+            </div>
+            <div class="stack-card-inner">
+              <div class="villa-image-wrapper">
+                <img src="images/homestay/1mc2t12000szinjjtbc1b-r-800-800-r5.webp" alt="The Glass Pine Pavilion" class="villa-img" loading="lazy" />
+                <div class="villa-price-tag">
+                  <span class="price">3.850.000₫</span>
+                  <span class="unit">/ đêm</span>
+                </div>
+              </div>
+              <div class="villa-body">
+                <div class="villa-meta">
+                  <span><i data-lucide="maximize"></i> 85m²</span>
+                  <span><i data-lucide="users"></i> 2 - 3 Khách</span>
+                  <span><i data-lucide="bath"></i> Onsen Pơ-mu Ngoài Trời</span>
+                </div>
+                <h3 class="villa-title">The Glass Pine Pavilion</h3>
+                <p class="villa-excerpt">
+                  Căn nhà kính lọt thỏm giữa cụm thông trăm tuổi, bồn sục onsen gỗ pơ-mu ngoài ban công kính nhìn thẳng xuống thung lũng bồng bềnh mây. Không gian thiết kế tối giản Wabi-Sabi tôn vinh vẻ đẹp nguyên bản của đá và gỗ tự nhiên.
+                </p>
+                <div class="villa-amenities">
+                  <span class="amenity-chip"><i data-lucide="flame"></i> Lò Sưởi Đá Tự Nhiên</span>
+                  <span class="amenity-chip"><i data-lucide="coffee"></i> Máy Pha Cà Phê Thủ Công</span>
+                  <span class="amenity-chip"><i data-lucide="wifi"></i> Starlink WiFi</span>
+                </div>
+                <div class="villa-footer">
+                  <button class="detail-btn" onclick="openVillaModal('glass-pine')">Chi Tiết Căn <i data-lucide="arrow-right"></i></button>
+                  <button class="liquid-btn book-villa-btn" onclick="openBookingDrawer('glass-pine')">
+                    <span class="btn-text">Đặt Căn Này</span>
+                    <span class="liquid-glow"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Stack Card 2 -->
+          <article class="villa-card stack-card" data-category="couple luxury" data-index="2" style="--card-index: 2;" data-cursor="XEM VILLA">
+            <div class="stack-card-header-bar">
+              <div class="stack-card-identity">
+                <span class="stack-number">02</span>
+                <span class="stack-villa-name">CLOUD CREST LOFT</span>
+              </div>
+              <span class="stack-pill-tag">Best Sunrise • Ngắm Bình Minh</span>
+            </div>
+            <div class="stack-card-inner">
+              <div class="villa-image-wrapper">
+                <img src="images/homestay/homestay-quan-1-2.png" alt="Cloud Crest Loft" class="villa-img" loading="lazy" />
+                <div class="villa-price-tag">
+                  <span class="price">4.200.000₫</span>
+                  <span class="unit">/ đêm</span>
+                </div>
+              </div>
+              <div class="villa-body">
+                <div class="villa-meta">
+                  <span><i data-lucide="maximize"></i> 110m²</span>
+                  <span><i data-lucide="users"></i> 2 - 4 Khách</span>
+                  <span><i data-lucide="sun"></i> Sân Hiên Săn Mây 40m²</span>
+                </div>
+                <h3 class="villa-title">Cloud Crest Loft</h3>
+                <p class="villa-excerpt">
+                  Tọa lạc tại mỏm đá cao nhất của khuôn viên, trần gác lửng kính giếng trời ngắm dải ngân hà ban đêm và đón ánh bình minh đầu tiên trên đỉnh núi. Phòng xông hơi khô Sauna gỗ tuyết tùng riêng biệt mang lại sự thư thái tối đa.
+                </p>
+                <div class="villa-amenities">
+                  <span class="amenity-chip"><i data-lucide="telescope"></i> Kính Thiên Văn Celestron</span>
+                  <span class="amenity-chip"><i data-lucide="music"></i> Loa Marshall</span>
+                  <span class="amenity-chip"><i data-lucide="wind"></i> Sauna Tuyết Tùng</span>
+                </div>
+                <div class="villa-footer">
+                  <button class="detail-btn" onclick="openVillaModal('cloud-crest')">Chi Tiết Căn <i data-lucide="arrow-right"></i></button>
+                  <button class="liquid-btn book-villa-btn" onclick="openBookingDrawer('cloud-crest')">
+                    <span class="btn-text">Đặt Căn Này</span>
+                    <span class="liquid-glow"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Stack Card 3 -->
+          <article class="villa-card stack-card" data-category="family" data-index="3" style="--card-index: 3;" data-cursor="XEM VILLA">
+            <div class="stack-card-header-bar">
+              <div class="stack-card-identity">
+                <span class="stack-number">03</span>
+                <span class="stack-villa-name">MIZU STREAM RETREAT</span>
+              </div>
+              <span class="stack-pill-tag">Riverside Calm • Bên Suối Rì Rào</span>
+            </div>
+            <div class="stack-card-inner">
+              <div class="villa-image-wrapper">
+                <img src="images/homestay/homestay-vinh-hy-2.png" alt="Mizu Stream Retreat" class="villa-img" loading="lazy" />
+                <div class="villa-price-tag">
+                  <span class="price">4.650.000₫</span>
+                  <span class="unit">/ đêm</span>
+                </div>
+              </div>
+              <div class="villa-body">
+                <div class="villa-meta">
+                  <span><i data-lucide="maximize"></i> 135m²</span>
+                  <span><i data-lucide="users"></i> 4 - 6 Khách (Gia đình)</span>
+                  <span><i data-lucide="waves"></i> Hồ Nước Ấm 38°C</span>
+                </div>
+                <h3 class="villa-title">Mizu Stream Retreat</h3>
+                <p class="villa-excerpt">
+                  Dinh thự gỗ 2 tầng nằm cạnh dòng suối Mơ trong vắt. Vườn tre thiền Nhật Bản, trà đình ngoài trời bên hồ cá Koi và hồ bơi khoáng nóng tự nhiên sưởi ấm 38°C. Không gian lý tưởng cho kỳ nghỉ gia đình trọn vẹn.
+                </p>
+                <div class="villa-amenities">
+                  <span class="amenity-chip"><i data-lucide="utensils"></i> Bếp Gia Đình Cao Cấp</span>
+                  <span class="amenity-chip"><i data-lucide="leaf"></i> Vườn Trà Riêng</span>
+                  <span class="amenity-chip"><i data-lucide="tv"></i> Rạp Chiếu Phim 4K</span>
+                </div>
+                <div class="villa-footer">
+                  <button class="detail-btn" onclick="openVillaModal('mizu-stream')">Chi Tiết Căn <i data-lucide="arrow-right"></i></button>
+                  <button class="liquid-btn book-villa-btn" onclick="openBookingDrawer('mizu-stream')">
+                    <span class="btn-text">Đặt Căn Này</span>
+                    <span class="liquid-glow"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Stack Card 4 -->
+          <article class="villa-card stack-card" data-category="luxury couple" data-index="4" style="--card-index: 4;" data-cursor="XEM VILLA">
+            <div class="stack-card-header-bar">
+              <div class="stack-card-identity">
+                <span class="stack-number">04</span>
+                <span class="stack-villa-name">AETHER STAR OBSERVATORY</span>
+              </div>
+              <span class="stack-pill-tag">Signature Dome • Kiệt Tác Đỉnh Đồi</span>
+            </div>
+            <div class="stack-card-inner">
+              <div class="villa-image-wrapper">
+                <img src="images/homestay/images-2.jpg" alt="Aether Star Observatory" class="villa-img" loading="lazy" />
+                <div class="villa-price-tag">
+                  <span class="price">5.200.000₫</span>
+                  <span class="unit">/ đêm</span>
+                </div>
+              </div>
+              <div class="villa-body">
+                <div class="villa-meta">
+                  <span><i data-lucide="maximize"></i> 150m²</span>
+                  <span><i data-lucide="users"></i> 2 - 4 Khách</span>
+                  <span><i data-lucide="sparkles"></i> Mái Vòm Kính 360°</span>
+                </div>
+                <h3 class="villa-title">Aether Star Observatory</h3>
+                <p class="villa-excerpt">
+                  Kiệt tác mái vòm kính geodesic cao cấp giữa đồi thông lộng gió. Hồ bơi vô cực nước ấm tràn viền mây ngàn và dịch vụ quản gia riêng chuẩn 5 sao phục vụ trà đạo và ẩm thực tại phòng suốt 24/7.
+                </p>
+                <div class="villa-amenities">
+                  <span class="amenity-chip"><i data-lucide="user-check"></i> Quản Gia Phục Vụ 24/7</span>
+                  <span class="amenity-chip"><i data-lucide="wine"></i> Hầm Rượu Vang Mộc</span>
+                  <span class="amenity-chip"><i data-lucide="shield"></i> Riêng Tư Tuyệt Đối</span>
+                </div>
+                <div class="villa-footer">
+                  <button class="detail-btn" onclick="openVillaModal('aether-dome')">Chi Tiết Căn <i data-lucide="arrow-right"></i></button>
+                  <button class="liquid-btn book-villa-btn" onclick="openBookingDrawer('aether-dome')">
+                    <span class="btn-text">Đặt Căn Này</span>
+                    <span class="liquid-glow"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Sensory Soundscape Section -->
+    <section class="section sensory-section" id="sensory">
+      <div class="container">
+        <div class="sensory-box">
+          <div class="sensory-content">
+            <div class="section-badge">
+              <i data-lucide="headphones"></i>
+              <span>TRẢI NGHIỆM ĐÁNH THỨC GIÁC QUAN</span>
+            </div>
+            <h2 class="sensory-title">Thính Âm Mộc Lan: Suối, Gió & Lửa Hồng</h2>
+            <p class="sensory-desc">
+              Chúng tôi thu lại tần số rung động của tự nhiên tại vùng thung lũng: từ tiếng gió xào xạc qua rừng tùng, tiếng mưa rào êm êm trên mái ngói ngọc rêu phong cho tới tiếng củi thông cháy lách tách trong lò sưởi. Hãy đeo tai nghe và nhắm mắt lại.
+            </p>
+            <div class="sound-tracks-controls">
+              <button class="track-btn active" data-sound="breeze" id="track-breeze">
+                <i data-lucide="wind"></i> Gió Rừng & Chuông Gió
+              </button>
+              <button class="track-btn" data-sound="fire" id="track-fire">
+                <i data-lucide="flame"></i> Lửa Sưởi Gỗ Thông
+              </button>
+              <button class="track-btn" data-sound="rain" id="track-rain">
+                <i data-lucide="cloud-drizzle"></i> Mưa Đêm Núi Cao
+              </button>
+            </div>
+            <div class="volume-slider-wrap">
+              <i data-lucide="volume-1"></i>
+              <input type="range" id="sensory-volume" min="0" max="100" value="70" aria-label="Âm lượng" />
+              <i data-lucide="volume-2"></i>
+            </div>
+          </div>
+          <div class="sensory-visual">
+            <div class="zen-circle" id="zen-circle">
+              <div class="zen-ripple"></div>
+              <div class="zen-ripple ripple-2"></div>
+              <div class="zen-center-orb">
+                <i data-lucide="play" id="zen-play-icon"></i>
+              </div>
+            </div>
+            <span class="zen-caption">Chạm vào tâm vòng tròn để bắt đầu thiền định</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Curated Experiences Section -->
+    <section class="section experiences-section" id="experiences">
+      <div class="container">
+        <div class="section-badge">
+          <i data-lucide="compass"></i>
+          <span>HOẠT ĐỘNG CHỮA LÀNH TÂM THỨC</span>
+        </div>
+        <h2 class="section-title">Những Trải Nghiệm Khó Quên Tại Komorebi</h2>
+        <p class="section-subtitle">Mỗi khoảnh khắc ở đây là một liều thuốc dịu êm thanh lọc những ồn ã của đời sống thành thị.</p>
+
+        <div class="exp-grid">
+          <div class="exp-card">
+            <div class="exp-img-wrap">
+              <img src="images/van-hoa-trai-nghiem/trai-nghiem-van-hoa-tay-bac-1.jpg" alt="Tắm Khoáng Onsen" loading="lazy" />
+              <span class="exp-tag">Mỗi Chiều Hoàng Hôn</span>
+            </div>
+            <div class="exp-content">
+              <h3>Nghi Thức Onsen & Trị Liệu Thảo Dược Dao Đỏ</h3>
+              <p>Ngâm mình trong làn nước nóng chứa 18 vị thuốc quý từ rừng già Fansipan, giúp xoa dịu cơ bắp và đả thông kinh mạch dưới làn sương lạnh.</p>
+            </div>
+          </div>
+
+          <div class="exp-card">
+            <div class="exp-img-wrap">
+              <img src="images/check-in-canh-dep/sm-check-in-hang-mua-5219dc5de5.jpg" alt="Yoga & Thiền Định" loading="lazy" />
+              <span class="exp-tag">06:00 AM Hàng Ngày</span>
+            </div>
+            <div class="exp-content">
+              <h3>Đón Bình Minh Săn Mây & Hatha Yoga</h3>
+              <p>Khởi đầu ngày mới trên sàn gỗ mở rộng giữa không trung, hít hà không khí tinh khiết và ngắm biển mây cuồn cuộn dưới chân.</p>
+            </div>
+          </div>
+
+          <div class="exp-card">
+            <div class="exp-img-wrap">
+              <img src="images/an-uong-thu-gian/am-thuc1.jpg" alt="Tiệc Nướng Lửa Trại" loading="lazy" />
+              <span class="exp-tag">20:00 PM Mỗi Tối</span>
+            </div>
+            <div class="exp-content">
+              <h3>Đêm Nhạc Acoustic & Rượu Vang Quanh Đống Lửa</h3>
+              <p>Quây quần bên đốm than hồng ấm áp, thưởng thức cá tầm nướng lá mắc mật, rượu vang nóng và những giai điệu mộc mạc dưới trời sao.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guest Testimonials Section -->
+    <section class="section reviews-section" id="reviews">
+      <div class="container">
+        <div class="section-badge">
+          <i data-lucide="heart"></i>
+          <span>CẢM NHẬN DU KHÁCH</span>
+        </div>
+        <h2 class="section-title">Ký Ức Đọng Lại Trong Lòng Du Khách</h2>
+        
+        <div class="reviews-slider">
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-quote">
+              "Một nơi chốn kỳ diệu thật sự. Sáng sớm mở mắt ra, mây trôi vào tận cửa kính phòng ngủ. Tắm onsen giữa tiết trời 15 độ C ngắm rừng thông là trải nghiệm tuyệt vời nhất mà mình từng có tại Việt Nam."
+            </p>
+            <div class="reviewer-info">
+              <img src="images/check-in-canh-dep/images-1.jpg" alt="Hà My" class="reviewer-avatar" />
+              <div>
+                <span class="reviewer-name">Lê Hà My</span>
+                <span class="reviewer-role">Nhiếp ảnh gia & Nhà văn tự do, Hà Nội</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-quote">
+              "Komorebi mang lại sự riêng tư và tĩnh lặng tuyệt đối. Từng chi tiết nhỏ từ mùi tinh dầu gỗ tuyết tùng, chiếc lò sưởi ấm cúng đến vị trà Shan Tuyết do quản gia pha đều thể hiện sự chăm chút tỉ mỉ."
+            </p>
+            <div class="reviewer-info">
+              <img src="images/check-in-canh-dep/images-2.jpg" alt="Tuấn Anh" class="reviewer-avatar" />
+              <div>
+                <span class="reviewer-name">Trần Tuấn Anh</span>
+                <span class="reviewer-role">Kiến trúc sư, TP. Hồ Chí Minh</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-quote">
+              "Gia đình mình đã có 3 ngày tuyệt vời tại Mizu Stream Retreat. Bọn trẻ cực thích dòng suối trong veo và bầu trời đêm đầy sao không bị ô nhiễm ánh sáng. Chắc chắn chúng mình sẽ trở lại vào mùa đông!"
+            </p>
+            <div class="reviewer-info">
+              <img src="images/check-in-canh-dep/images-3.jpg" alt="Ngọc Lan" class="reviewer-avatar" />
+              <div>
+                <span class="reviewer-name">Nguyễn Ngọc Lan</span>
+                <span class="reviewer-role">Giám đốc Sáng tạo, Đà Nẵng</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pinned Horizontal Scroll Panorama Gallery (At Bottom Before CTA) -->
+    <!-- Premium Asymmetric Photo Gallery Section -->
+    <section class="section scenery-section-new" id="panorama-section">
+      <div class="container">
+        <div class="section-badge">
+          <i data-lucide="compass"></i>
+          <span>BỘ SƯU TẬP PHONG CẢNH</span>
+        </div>
+        <h2 class="section-title">Hành Trình Băng Qua Thung Lũng Mây</h2>
+        <p class="section-subtitle">Khám phá vẻ đẹp chuyển dịch của thung lũng Mường Hoa qua ống kính nhiếp ảnh.</p>
+
+        <div class="scenery-grid">
+          <!-- Card 1 (Large - span 7) -->
+          <div class="scenery-card large" data-cursor="XEM ẢNH">
+            <div class="scenery-img-wrap">
+              <img src="images/check-in-canh-dep/8-dia-diem-check-in-dep-quen-sau-o-hoa-binh-image-exa0-1720971802-683-width780height439.jpg" alt="Bình minh thung lũng" loading="lazy" />
+              <div class="scenery-overlay"></div>
+            </div>
+            <div class="scenery-info">
+              <span class="scenery-tag">06:15 AM</span>
+              <h4>Bình Minh Sương Mây Thung Lũng Mường Hoa</h4>
+              <p>Khoảnh khắc tia nắng đầu tiên xuyên qua kẽ lá thông, dát vàng lên biển mây cuồn cuộn.</p>
+            </div>
+          </div>
+
+          <!-- Card 2 (Small - span 5) -->
+          <div class="scenery-card small" data-cursor="XEM ẢNH">
+            <div class="scenery-img-wrap">
+              <img src="images/check-in-canh-dep/check-in-da-lat.jpg" alt="Đường mòn rừng thông" loading="lazy" />
+              <div class="scenery-overlay"></div>
+            </div>
+            <div class="scenery-info">
+              <span class="scenery-tag">Lối Đi Riêng</span>
+              <h4>Đường Mòn Dưới Tán Thông Cổ Thụ 100 Năm</h4>
+              <p>Lát đá bazan chống trơn trượt, hai bên rực rỡ sắc dã quỳ và dương xỉ ẩm ướt nguyên sinh.</p>
+            </div>
+          </div>
+
+          <!-- Card 3 (Small - span 5) -->
+          <div class="scenery-card small" data-cursor="XEM ẢNH">
+            <div class="scenery-img-wrap">
+              <img src="images/check-in-canh-dep/check-in-o-flamingo-cat-ba02.jpg" alt="Hồ Onsen ngoài trời" loading="lazy" />
+              <div class="scenery-overlay"></div>
+            </div>
+            <div class="scenery-info">
+              <span class="scenery-tag">Nhiệt Độ 38°C</span>
+              <h4>Hồ Khoáng Nóng Thảo Dược Hướng Mây Trôi</h4>
+              <p>Ngâm mình thư thái, thưởng thức chén trà Shan Tuyết nóng giữa làn gió se lạnh 15°C.</p>
+            </div>
+          </div>
+
+          <!-- Card 4 (Large - span 7) -->
+          <div class="scenery-card large" data-cursor="XEM ẢNH">
+            <div class="scenery-img-wrap">
+              <img src="images/check-in-canh-dep/nhung-toa-do-song-ao-dep-nhu-troi-tay-o-viet-nam-hut-khach-checkindocx-1615078910396.webp" alt="Bầu trời sao ban đêm" loading="lazy" />
+              <div class="scenery-overlay"></div>
+            </div>
+            <div class="scenery-info">
+              <span class="scenery-tag">Ngắm Dải Ngân Hà</span>
+              <h4>Bầu Trời Đêm Thuần Khiết Không Ô Nhiễm Ánh Sáng</h4>
+              <p>Tận mắt chiêm ngưỡng hàng vạn vì sao lấp lánh như vệt ngọc rắc qua đỉnh núi Fansipan.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Location & Directions Section -->
+    <section class="section location-section" id="location">
+      <div class="container location-container">
+        <div class="location-content">
+          <div class="section-badge">
+            <i data-lucide="map-pin"></i>
+            <span>VỊ TRÍ & ĐƯỜNG ĐI</span>
+          </div>
+          <h2 class="section-title">Ẩn Mình Giữa Sương Mây Hầu Thào</h2>
+          <p class="section-subtitle">Cách thị trấn Sa Pa 8km về phía đông nam, nằm biệt lập trên sườn đồi bản Hầu Thào lộng gió.</p>
+          
+          <div class="location-details-grid">
+            <div class="location-detail-card">
+              <i data-lucide="compass"></i>
+              <div>
+                <h4>Tọa Độ Bản Địa</h4>
+                <p>22°20'N 103°50'E • Độ cao 1,650m so với mực nước biển.</p>
+              </div>
+            </div>
+            
+            <div class="location-detail-card">
+              <i data-lucide="car"></i>
+              <div>
+                <h4>Dịch Vụ Đưa Đón VIP</h4>
+                <p>Xe limousine đưa đón khứ hồi 2 chiều từ trung tâm Hà Nội hoặc ga Sa Pa.</p>
+              </div>
+            </div>
+            
+            <div class="location-detail-card">
+              <i data-lucide="navigation"></i>
+              <div>
+                <h4>Hướng Dẫn Di Chuyển</h4>
+                <p>Từ nhà thờ Đá Sa Pa, đi dọc theo tuyến đường thung lũng Mường Hoa hướng về Hầu Thào 8km (khoảng 20 phút đi ô tô/xe máy).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="location-map-card" data-tilt data-cursor="DI CHUYỂN">
+          <div class="map-overlay-shield" id="map-shield">
+            <div class="map-shield-content">
+              <div class="pulse-marker">
+                <i data-lucide="map-pin"></i>
+              </div>
+              <span>Nhấp để tương tác với bản đồ</span>
+            </div>
+          </div>
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3683.0039230582236!2d103.88235287515088!3d22.334612741639145!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x36cd4109867c29fb%3A0xc4eb783b9cfb3be0!2zSOG6p3UgVGjDoG8sIFNhIFBhLCBMw6BvIENhaSwgVmlldG5hbQ!5e0!3m2!1sen!2s!4v1724982000000!5m2!1sen!2s" 
+            width="100%" 
+            height="100%" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pre-Footer CTA Banner -->
+    <section class="cta-banner-section">
+      <div class="container">
+        <div class="cta-banner-card">
+          <div class="cta-banner-content">
+            <span class="cta-pretitle">BẠN ĐÃ SẴN SÀNG CHO MỘT CHUYẾN ĐI CHỮA LÀNH?</span>
+            <h2 class="cta-banner-title">Hãy Để Lại Sau Lưng Thành Phố & Trở Về Với Rừng Xanh</h2>
+            <p class="cta-banner-desc">Số lượng phòng chỉ giới hạn 04 biệt thự để đảm bảo tính riêng tư và tĩnh lặng tuyệt đối cho từng du khách.</p>
+            <div class="cta-banner-btns">
+              <button class="liquid-btn cta-large-btn" onclick="openBookingDrawer('all')">
+                <span class="btn-text">Đặt Chỗ Trực Tuyến Ngay</span>
+                <i data-lucide="sparkles"></i>
+                <span class="liquid-glow"></span>
+              </button>
+              <a href="tel:+84988776655" class="ghost-btn call-concierge-btn">
+                <i data-lucide="phone-call"></i>
+                <span>Tư Vấn Trực Tiếp Quản Gia</span>
+              </a>
+            </div>
+          </div>
+          <div class="cta-banner-badge">
+            <div class="badge-ring">
+              <span>ĐẶT TRỰC TIẾP GIẢM 15% • TẶNG NƯỚC TẮM THẢO DƯỢC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">
+          <span class="logo-kanji">木漏れ日</span>
+          <span class="brand-name">KOMOREBI SANCTUARY</span>
+        </div>
+        <p class="footer-bio">
+          Khu nghỉ dưỡng sinh thái biệt lập giữa thung lũng Mường Hoa, Sa Pa, Lào Cai. Điểm đến cho những tâm hồn kiếm tìm sự thanh lọc và bình yên nguyên bản.
+        </p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Instagram"><i data-lucide="instagram"></i></a>
+          <a href="#" aria-label="Facebook"><i data-lucide="facebook"></i></a>
+          <a href="#" aria-label="Youtube"><i data-lucide="youtube"></i></a>
+          <a href="#" aria-label="Mail"><i data-lucide="mail"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Khám Phá</h4>
+        <ul class="footer-links">
+          <li><a href="#villas">The Glass Pine Pavilion</a></li>
+          <li><a href="#villas">Cloud Crest Loft</a></li>
+          <li><a href="#villas">Mizu Stream Retreat</a></li>
+          <li><a href="#villas">Aether Star Observatory</a></li>
+          <li><a href="#experiences">Tắm Khoáng Onsen Thảo Dược</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading">Thông Tin Lưu Trú</h4>
+        <ul class="footer-links">
+          <li><a href="#">Chính Sách Nhận & Trả Phòng</a></li>
+          <li><a href="#">Dịch Vụ Đưa Đón Sân Bay Nội Bài</a></li>
+          <li><a href="#">Thực Đơn Thuần Chay & Bản Địa</a></li>
+          <li><a href="#">Cam Kết Bền Vững Xanh 100%</a></li>
+          <li><a href="#">Hỏi Đáp Thường Gặp (FAQ)</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col contact-col">
+        <h4 class="footer-heading">Liên Hệ & Đặt Chỗ</h4>
+        <p><i data-lucide="map-pin"></i> Thôn Hầu Thào, Thung Lũng Mường Hoa, Sa Pa, Lào Cai</p>
+        <p><i data-lucide="phone"></i> Hotline / Zalo: 0988 776 655</p>
+        <p><i data-lucide="mail"></i> concierge@komorebisanctuary.vn</p>
+        <div class="shuttle-info-box">
+          <i data-lucide="car"></i> Xe limousine cao cấp đón trả tận nơi từ trung tâm Hà Nội hoặc Sa Pa.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>© 2026 Komorebi Sanctuary Retreat. Mọi quyền được bảo lưu.</p>
+        <p class="design-credit">Thiết kế & Tương tác 3D WebGL theo chuẩn ThreeUI & GSAP</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Booking Drawer / Modal -->
+  <div class="booking-drawer-overlay" id="booking-drawer-overlay">
+    <div class="booking-drawer" id="booking-drawer">
+      <div class="drawer-header">
+        <div>
+          <span class="drawer-pretitle">ĐẶT PHÒNG TRỰC TIẾP</span>
+          <h3 class="drawer-title" id="drawer-villa-title">The Glass Pine Pavilion</h3>
+        </div>
+        <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Đóng">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <form class="drawer-form" id="booking-form" onsubmit="event.preventDefault(); submitBooking();">
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="b-checkin">Ngày Nhận Phòng</label>
+            <input type="date" id="b-checkin" required value="2026-09-15" onchange="calculateBookingTotal()" />
+          </div>
+          <div class="form-group">
+            <label for="b-checkout">Ngày Trả Phòng</label>
+            <input type="date" id="b-checkout" required value="2026-09-17" onchange="calculateBookingTotal()" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="b-villa-select">Lựa Chọn Hạng Villa</label>
+          <select id="b-villa-select" onchange="onDrawerVillaChange()">
+            <option value="glass-pine" data-price="3850000">The Glass Pine Pavilion (3.850.000₫/đêm)</option>
+            <option value="cloud-crest" data-price="4200000">Cloud Crest Loft (4.200.000₫/đêm)</option>
+            <option value="mizu-stream" data-price="4650000">Mizu Stream Retreat (4.650.000₫/đêm)</option>
+            <option value="aether-dome" data-price="5200000">Aether Star Observatory (5.200.000₫/đêm)</option>
+          </select>
+        </div>
+
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="b-guests">Số Khách</label>
+            <select id="b-guests">
+              <option value="2">2 Người lớn</option>
+              <option value="1">1 Khách</option>
+              <option value="3">3 Khách</option>
+              <option value="4">4 Khách</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="b-phone">Số Điện Thoại / Zalo</label>
+            <input type="tel" id="b-phone" placeholder="09xx xxx xxx" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="b-name">Họ & Tên Khách Hàng</label>
+          <input type="text" id="b-name" placeholder="Nguyễn Văn A" required />
+        </div>
+
+        <!-- Add-on experiences -->
+        <div class="addons-section">
+          <label class="addons-title">Dịch Vụ Đi Kèm Tùy Chọn</label>
+          <label class="addon-checkbox">
+            <input type="checkbox" id="addon-onsen" checked onchange="calculateBookingTotal()" />
+            <span>Liệu trình tắm thảo dược Dao Đỏ tươi (Tặng kèm miễn phí)</span>
+            <strong>0₫</strong>
+          </label>
+          <label class="addon-checkbox">
+            <input type="checkbox" id="addon-dinner" onchange="calculateBookingTotal()" />
+            <span>Bữa tối nướng than hoa thảo mộc bản địa (+650.000₫/khách)</span>
+            <strong>+650.000₫</strong>
+          </label>
+          <label class="addon-checkbox">
+            <input type="checkbox" id="addon-shuttle" onchange="calculateBookingTotal()" />
+            <span>Xe Limousine VIP khứ hồi Hà Nội - Sa Pa (+900.000₫/2 chiều)</span>
+            <strong>+900.000₫</strong>
+          </label>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="price-summary-card">
+          <div class="summary-row">
+            <span id="summary-nights">2 đêm x 3.850.000₫:</span>
+            <span id="summary-room-subtotal">7.700.000₫</span>
+          </div>
+          <div class="summary-row" id="summary-addon-row" style="display:none;">
+            <span>Dịch vụ cộng thêm:</span>
+            <span id="summary-addon-subtotal">0₫</span>
+          </div>
+          <div class="summary-row discount-row">
+            <span>Ưu đãi đặt trực tiếp (-15%):</span>
+            <span id="summary-discount">-1.155.000₫</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total-row">
+            <span>TỔNG THANH TOÁN DỰ KIẾN:</span>
+            <strong id="summary-total">6.545.000₫</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="liquid-btn drawer-submit-btn" id="confirm-booking-btn">
+          <span class="btn-text">Xác Nhận Giữ Phòng Ngay</span>
+          <i data-lucide="check-circle-2"></i>
+          <span class="liquid-glow"></span>
+        </button>
+
+        <p class="drawer-policy">
+          <i data-lucide="shield-check"></i> Không mất phí hủy phòng trước 07 ngày. Thanh toán khi check-in hoặc qua chuyển khoản an toàn.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Villa Detail Modal -->
+  <div class="modal-overlay" id="villa-modal-overlay">
+    <div class="modal-card" id="villa-modal-card">
+      <button class="modal-close-btn" id="modal-close-btn"><i data-lucide="x"></i></button>
+      <div class="modal-inner" id="villa-modal-content">
+        <!-- Content will be injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Virtual 3D Tour Modal -->
+  <div class="modal-overlay" id="tour-modal-overlay">
+    <div class="modal-card tour-modal-card" id="tour-modal-card">
+      <button class="modal-close-btn" id="tour-modal-close-btn"><i data-lucide="x"></i></button>
+      <div class="tour-header">
+        <span class="badge-dot"></span>
+        <h3>Trải Nghiệm Toàn Cảnh 3D Komorebi Sanctuary</h3>
+        <p>Di chuột hoặc kéo thả để tương tác với bầu không khí và sương mù 3D thực tế ảo.</p>
+      </div>
+      <div class="tour-canvas-wrap" id="tour-canvas-wrap">
+        <div class="tour-controls-hud">
+          <button class="hud-btn" id="hud-camera-toggle"><i data-lucide="rotate-3d"></i> Đổi Góc Nhìn</button>
+          <button class="hud-btn" id="hud-fireflies-toggle"><i data-lucide="sparkles"></i> Đom Đóm Phát Sáng</button>
+          <span class="hud-info">Kéo thả chuột để quay 360°</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-notification" id="toast">
+    <i data-lucide="check" class="toast-icon"></i>
+    <span class="toast-message" id="toast-msg">Thành công!</span>
+  </div>
+
+  <!-- App Scripts -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
